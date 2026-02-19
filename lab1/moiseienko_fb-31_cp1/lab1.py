@@ -48,11 +48,40 @@ def calculate_h1(filename):
     print(f"Ентропія H1: {entropy:.5f} біт/символ")
     return entropy
 
+def calculate_h2(filename, step=1):
+    with open(filename, 'r', encoding='utf-8') as f:
+        text = f.read()
+
+    bigrams = [text[i:i+2] for i in range(0, len(text) - 1, step)]
+
+    total_bigrams = len(bigrams)
+    counts = Counter(bigrams)
+
+    entropy = 0
+    for bigram in counts:
+        p_i = counts[bigram] / total_bigrams
+        entropy -= p_i * math.log2(p_i)
+
+    h2 = entropy / 2
+
+    mode = "з перетинами" if step == 1 else "без перетинів"
+    print(f"Ентропія H2 ({mode}) для {filename}: {h2:.5f} біт/символ")
+    return h2
+
 if __name__ == "__main__":
     file_to_open = 'Брати Карамазови Федір Достоєвський.txt'
-
     f1, f2 = clean_and_prepare_text(file_to_open)
 
     if f1 and f2:
-        h1_with = calculate_h1(f1)
-        h1_no = calculate_h1(f2)
+        print("\n Розрахунок H1")
+        calculate_h1(f1)
+        calculate_h1(f2)
+
+        print("\n Розрахунок H2 (з перетинами)")
+        calculate_h2(f1, step=1)
+        calculate_h2(f2, step=1)
+
+        print("\n Розрахунок H2 (без перетинів)")
+        calculate_h2(f1, step=2)
+        calculate_h2(f2, step=2)
+        
