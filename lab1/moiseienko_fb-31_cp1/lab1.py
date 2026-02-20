@@ -1,6 +1,7 @@
 import re
 import math
 from collections import Counter
+import csv
 
 def clean_and_prepare_text(input_filename):
     print(f"Обробка файлу: {input_filename}")
@@ -68,6 +69,14 @@ def calculate_h2(filename, step=1):
     print(f"Ентропія H2 ({mode}) для {filename}: {h2:.5f} біт/символ")
     return h2
 
+def save_to_excel_format(data_counter, filename):
+    total = sum(data_counter.values())
+    with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
+        writer = csv.writer(f, delimiter=';')
+        writer.writerow(['Елемент', 'Кількість', 'Частота'])
+        for item, count in data_counter.most_common():
+            writer.writerow([item, count, count/total])
+
 if __name__ == "__main__":
     file_to_open = 'Брати Карамазови Федір Достоєвський.txt'
     f1, f2 = clean_and_prepare_text(file_to_open)
@@ -84,4 +93,13 @@ if __name__ == "__main__":
         print("\n Розрахунок H2 (без перетинів)")
         calculate_h2(f1, step=2)
         calculate_h2(f2, step=2)
+
+with open("no_spaces.txt", "r", encoding="utf-8") as f:
+    text_data = f.read()
+
+save_to_excel_format(Counter(text_data), "frequencies_letters.csv")
+
+save_to_excel_format(Counter([text_data[i:i+2] for i in range(0, len(text_data)-1, 2)]), "frequencies_bigrams.csv")
+
+print("Успіх!")
         
