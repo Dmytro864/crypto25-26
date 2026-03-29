@@ -1,4 +1,5 @@
 import collections
+import matplotlib.pyplot as plt
 
 Alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 
@@ -83,6 +84,43 @@ def analyse_period(text, max_r=30):
         mr = sum(ics) / len(ics)
         print(f"{r:>2} | {mr:.5f}")
 
+def plot_ic_comparison(results_dict):
+    rs = list(results_dict.keys())
+    ics = list(results_dict.values())
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(rs, ics, marker='o', linestyle='-', color='b')
+    plt.axhline(y=0.0553, color='r', linestyle='--', label='Еталон (0.0553)')
+    plt.axhline(y=0.0312, color='g', linestyle='--', label='Випадковий (0.0312)')
+
+    plt.title('Залежність ІВ від довжини ключа r')
+    plt.xlabel('Довжина ключа (r)')
+    plt.ylabel('ІВ')
+    plt.xticks(rs)
+    plt.grid(True)
+    plt.legend()
+    plt.savefig('ic_comparison.png')
+    print("Графік ic_comparison.")
+    plt.show()
+
+def plot_period_analysis(r_values, ic_values):
+     plt.figure(figsize=(12, 6))
+     plt.bar(r_values, ic_values, color='skyblue', edgecolor='navy')
+
+     for i, r in enumerate(r_values):
+         if r in [13, 26]:
+             plt.bar(r, ic_values[i], color='salmon', edgecolor='red')
+
+     plt.title('Аналіз періоду для варіанту 4')
+     plt.xlabel('r')
+     plt.ylabel('Середній ІВ')
+     plt.xticks(range(2, 31))
+     plt.axhline(y=0.0553, color='r', linestyle='--', alpha=0.5)
+     plt.grid(axis='y', linestyle='--', alpha=0.7)
+     plt.savefig('period_analysis.png')
+     print("Діаграма period_analysis.png.")
+     plt.show()
+
 if __name__ == "__main__":
     try:
         cipher_text = get_clean_text('cipher_text_v4.txt')
@@ -90,13 +128,26 @@ if __name__ == "__main__":
 
         test_text = get_clean_text('text_lab2.txt')
         print("Пункт 2: Порівняння ІВ")
-        print(f"ІВ відкритого тексту: {calculate_ic(test_text):.5f}")
-
+        ic_results = {0: calculate_ic(test_text)}
+        print(f"r = 0(ВТ) | ІВ: {ic_results[0]:.5f}")
+              
         test_keys = ["да", "три", "хлеб", "экран", "деньзатмения"]
         for k in test_keys:
             encrypted_test = vigenere_encrypt(test_text, k)
+            val = calculate_ic(encrypted_test)
+            ic_results[len(k)] = val
             print(f"r = {len(k):>2} | ІВ: {calculate_ic(encrypted_test):.5f}")
+        plot_ic_comparison(ic_results)    
         print("\n")
+
+        r_range = list(range(2, 31))
+        ic_list = []
+        for r in r_range:
+            ics = [calculate_ic(cipher_text[i::r]) for i in range(r)]
+            ic_list.append(sum(ics) / len(ics))
+
+        plot_period_analysis(r_range, ic_list)    
+            
     except FileNotFoundError:
         print("Попередження: Файл 'text_lab2.txt' не знайдено. \n")
 
@@ -114,4 +165,6 @@ if __name__ == "__main__":
 
     with open('decrypted_v4.txt', 'w', encoding='utf-8') as f:
         f.write(decrypted_text)
-    print("\nТекст збережено у файл 'decrypted_v4.txt'")    
+    print("\nТекст збережено у файл 'decrypted_v4.txt'")
+
+       
